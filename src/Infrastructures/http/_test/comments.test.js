@@ -130,4 +130,28 @@ describe('/threads/{threadId}/comments endpoint', () => {
       expect(responseJson.status).toEqual('success');
     });
   });
+
+  describe('when PUT /threads/{threadId}/comments/{commentId}/likes', () => {
+    it('should response 200 return success status', async () => {
+      const userLoginPayload = {
+        username: 'for_test_only',
+        password: 'secret',
+      };
+      const loginUserUseCase = container.getInstance(LoginUserUseCase.name);
+      const { accessToken } = await loginUserUseCase.execute(userLoginPayload);
+
+      const server = await createServer(container);
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/threads/${threadId}/comments/${commentId}/likes`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+    });
+  });
 });
