@@ -35,6 +35,9 @@ const ReplyRepository = require('../Domains/replies/ReplyRepository');
 const ReplyRepositoryPostgres = require('./repository/ReplyRepositoryPostgres');
 const AddReplyUseCase = require('../Applications/use_case/AddReplyUseCase');
 const SoftDeleteReplyUseCase = require('../Applications/use_case/SoftDeleteReplyUseCase');
+const CommentLikesRepository = require('../Domains/comment_likes/CommentLikesRepository');
+const LikeCommentUseCase = require('../Applications/use_case/LikeCommentUseCase');
+const CommentLikeRepositoryPostgres = require('./repository/CommentLikeRepositoryPostgres');
 
 // creating container
 const container = createContainer();
@@ -119,6 +122,20 @@ container.register([
   {
     key: ReplyRepository.name,
     Class: ReplyRepositoryPostgres,
+    parameter: {
+      dependencies: [
+        {
+          concrete: pool,
+        },
+        {
+          concrete: nanoid,
+        },
+      ],
+    },
+  },
+  {
+    key: CommentLikesRepository.name,
+    Class: CommentLikeRepositoryPostgres,
     parameter: {
       dependencies: [
         {
@@ -283,6 +300,10 @@ container.register([
           name: 'replyRepository',
           internal: ReplyRepository.name,
         },
+        {
+          name: 'commentLikesRepository',
+          internal: CommentLikesRepository.name,
+        },
       ],
     },
   },
@@ -332,6 +353,31 @@ container.register([
         {
           name: 'threadRepository',
           internal: ThreadRepository.name,
+        },
+      ],
+    },
+  },
+  {
+    key: LikeCommentUseCase.name,
+    Class: LikeCommentUseCase,
+    parameter: {
+      injectType: 'destructuring',
+      dependencies: [
+        {
+          name: 'commentLikeRepository',
+          internal: CommentLikesRepository.name,
+        },
+        {
+          name: 'threadRepository',
+          internal: ThreadRepository.name,
+        },
+        {
+          name: 'commentRepository',
+          internal: CommentRepository.name,
+        },
+        {
+          name: 'userRepository',
+          internal: UserRepository.name,
         },
       ],
     },

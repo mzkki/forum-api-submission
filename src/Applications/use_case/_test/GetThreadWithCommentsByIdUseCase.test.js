@@ -2,6 +2,7 @@ const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const GetThreadWithCommentsByIdUseCase = require('../GetThreadWithCommentsByIdUseCase');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
+const CommentLikesRepository = require('../../../Domains/comment_likes/CommentLikesRepository');
 
 describe('GetThreadWithCommentsByIdUseCase', () => {
   it('should throw error if use case payload not contain threadId', async () => {
@@ -73,9 +74,17 @@ describe('GetThreadWithCommentsByIdUseCase', () => {
       },
     ];
 
+    const mockGetLikesCount = [
+      {
+        comment_id: 'comment-123',
+        count: 2,
+      },
+    ];
+
     const mockCommentRepository = new CommentRepository();
     const mockThreadRepository = new ThreadRepository();
     const mockReplyRepository = new ReplyRepository();
+    const mockCommentLikesRepository = new CommentLikesRepository();
 
     mockThreadRepository.checkAvaibilityThread = jest.fn()
       .mockImplementation(() => Promise.resolve());
@@ -83,6 +92,8 @@ describe('GetThreadWithCommentsByIdUseCase', () => {
       .mockImplementation(() => Promise.resolve(mockGetDetailComment));
     mockReplyRepository.getRepliesFromThread = jest.fn()
       .mockImplementation(() => Promise.resolve(mockGetReplies));
+    mockCommentLikesRepository.getLikesCount = jest.fn()
+      .mockImplementation(() => Promise.resolve(mockGetLikesCount));
     mockThreadRepository.getThreadById = jest.fn()
       .mockImplementation(() => Promise.resolve(mockGetDetailThread));
 
@@ -90,6 +101,7 @@ describe('GetThreadWithCommentsByIdUseCase', () => {
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
+      commentLikesRepository: mockCommentLikesRepository,
     });
 
     const threadWithComments = await getThreadWithCommentsByIdUseCase
@@ -98,6 +110,7 @@ describe('GetThreadWithCommentsByIdUseCase', () => {
     expect(mockThreadRepository.checkAvaibilityThread).toBeCalledWith(useCasePayload.threadId);
     expect(mockCommentRepository.getCommentsFromThread).toBeCalledWith(useCasePayload.threadId);
     expect(mockReplyRepository.getRepliesFromThread).toBeCalledWith(useCasePayload.threadId);
+    expect(mockCommentLikesRepository.getLikesCount).toBeCalledWith(useCasePayload.threadId);
     expect(threadWithComments).toStrictEqual({
       id: 'thread-123',
       title: 'contoh title',
@@ -124,6 +137,7 @@ describe('GetThreadWithCommentsByIdUseCase', () => {
             },
           ],
           content: 'this is the content',
+          likeCount: 2,
         },
         {
           id: 'comment-213',
@@ -131,6 +145,7 @@ describe('GetThreadWithCommentsByIdUseCase', () => {
           date: 'anggap aja date',
           replies: [],
           content: '**komentar telah dihapus**',
+          likeCount: 0,
         },
       ],
     });

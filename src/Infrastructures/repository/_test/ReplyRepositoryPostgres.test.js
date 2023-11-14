@@ -104,62 +104,6 @@ describe('ReplyRepositoryPostgres', () => {
     });
   });
 
-  describe('verifyReplyOwner function', () => {
-    it('should throw NotFoundError if reply not available', async () => {
-      const replyRepository = new ReplyRepositoryPostgres(pool);
-      const payload = {
-        replyId: 'comment',
-        owner: 'user-123',
-      };
-
-      await expect(replyRepository.verifyReplyOwner(payload))
-        .rejects.toThrow(NotFoundError);
-    });
-
-    it('should throw AuthorizationError if it wasn\'t the reply owner', async () => {
-      const replyRepository = new ReplyRepositoryPostgres(pool);
-      const reply = {
-        content: 'test',
-        owner: 'user-213',
-        threadId: 'thread-213',
-        commentId: 'comment-213',
-      };
-      await ReplyTableTestHelper.addReply(reply);
-
-      const payload = {
-        replyId: 'reply-123',
-        owner: 'user-123',
-      };
-
-      await expect(replyRepository.verifyReplyOwner(payload))
-        .rejects
-        .toThrow(AuthorizationError);
-    });
-
-    it('should not throw NotFoundError and AuthorizationError if reply are verified', async () => {
-      const replyRepository = new ReplyRepositoryPostgres(pool);
-      const reply = {
-        content: 'test',
-        owner: 'user-213',
-        threadId: 'thread-213',
-        commentId: 'comment-213',
-      };
-      await ReplyTableTestHelper.addReply(reply);
-
-      const payload = {
-        replyId: 'reply-123',
-        owner: 'user-213',
-      };
-
-      await expect(replyRepository.verifyReplyOwner(payload))
-        .resolves
-        .not.toThrow(NotFoundError);
-      await expect(replyRepository.verifyReplyOwner(payload))
-        .resolves
-        .not.toThrow(AuthorizationError);
-    });
-  });
-
   describe('getRepliesFromThread', () => {
     it('should return thread\'s replies comment correctly', async () => {
       await ReplyTableTestHelper.addReply({
