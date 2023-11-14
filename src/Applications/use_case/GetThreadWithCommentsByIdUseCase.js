@@ -1,8 +1,11 @@
 class GetThreadWithCommentsByIdUseCase {
-  constructor({ threadRepository, commentRepository, replyRepository }) {
+  constructor({
+    threadRepository, commentRepository, replyRepository, commentLikesRepository,
+  }) {
     this._threadRepository = threadRepository;
     this._commentRepository = commentRepository;
     this._replyRepository = replyRepository;
+    this._commentLikesRepository = commentLikesRepository;
   }
 
   async execute({ threadId }) {
@@ -11,6 +14,7 @@ class GetThreadWithCommentsByIdUseCase {
     const comments = await this._commentRepository.getCommentsFromThread(threadId);
     const thread = await this._threadRepository.getThreadById(threadId);
     const replies = await this._replyRepository.getRepliesFromThread(threadId);
+    const likes = await this._commentLikesRepository.getLikesCount(threadId);
     const threadData = {
       id: thread.id,
       title: thread.title,
@@ -29,6 +33,9 @@ class GetThreadWithCommentsByIdUseCase {
           username: reply.username,
         })),
         content: comment.is_delete ? '**komentar telah dihapus**' : comment.content,
+        // likeCount: likes.filter((like) => like.comment_id === comment.id)[0].count,
+        likeCount: likes.find((like) => like.comment_id === comment.id) !== undefined ? likes
+          .find((like) => like.comment_id === comment.id).count : 0,
       })),
     };
     return threadData;
